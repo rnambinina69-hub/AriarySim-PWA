@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AriarySim - Simulateur d'Investissement Mada</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#238636">
+    <style>
+        /* Variables et Style de Base (Mode Sombre Moderne) */
+        :root {
+            --bg: #0d1117;
+            --card: #161b22;
+            --muted: #8b949e;
+            --text: #c9d1d9;
+            --accent: #238636; /* Vert pour succès/ROI */
+            --info: #58a6ff; /* Bleu pour paramètres */
+            --warn: #f85149; /* Rouge pour alerte/suppression */
+            --border: #30363d;
+            --radius: 8px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 24px;
+            line-height: 1.5;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { margin: 0 0 4px; font-size: 2.2rem; color: var(--info); }
+        .sub { color: var(--muted); margin-bottom: 24px; font-size: 1rem; }
+        
+        /* Layout Grid */
+        .grid { display: grid; gap: 24px; grid-template-columns: 1fr; }
+        @media (min-width: 992px) { .grid-2 { grid-template-columns: 2fr 1fr; } }
+        @media (min-width: 1200px) { .grid-3 { grid-template-columns: 1.5fr 1fr 1fr; } }
+
+        /* Cartes (Containers) */
+        .card {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+        
+        /* Formulaires et Entrées */
+        label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 0.95rem; }
+        input, select {
+            background-color: #0d1117;
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus { border-color: var(--info); outline: none; }
+        input[type="number"] { text-align: right; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .row > div { margin-bottom: 12px; }
+        .muted { color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
+        
+        /* Boutons */
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+        .btn {
+            cursor: pointer;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: opacity 0.2s, background-color 0.2s;
+            border: 1px solid transparent;
+        }
+        .btn:hover { opacity: 0.8; }
+        .btn-primary { background-color: var(--info); color: var(--bg); border-color: var(--info); }
+        .btn-accent { background-color: var(--accent); color: var(--bg); border-color: var(--accent); }
+        .btn-warn { background-color: var(--warn); color: var(--bg); border-color: var(--warn); }
+        .btn-secondary { background-color: transparent; color: var(--text); border-color: var(--border); }
+
+        /* Indicateurs Clés (KPIs) */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 24px; }
+        .kpi-card { padding: 16px; border-left: 4px solid var(--border); }
+        .kpi-card h3 { margin: 0 0 4px; font-size: 1rem; color: var(--muted); }
+        .kpi-val { font-size: 1.8rem; font-weight: 700; margin-top: 0; }
+        .kpi-sub { font-size: 1.1rem; color: var(--text); }
+        .kpi-net-pos { color: var(--accent); }
+        .kpi-net-neg { color: var(--warn); }
+        .kpi-roi { color: var(--info); }
+        .pill { 
+            display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 0.9rem; margin-top: 6px; 
+            background-color: var(--border); color: var(--text);
+        }
+        
+        /* Tableau */
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { border-bottom: 1px solid var(--border); padding: 12px 8px; text-align: left; font-size: 0.9rem; }
+        th { color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: var(--radius); font-size: 0.8rem; font-weight: 500; }
+        .rev { background-color: #14321c; color: #40c476; }
+        .dep { background-color: #4e1a1e; color: #ff9191; }
+        
+        /* Projections */
+        .projection-table tbody tr:nth-child(1) { font-weight: 700; background-color: #1e2531; }
+        .projection-table tbody tr:nth-child(odd) { background-color: #1a202a; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AriarySim 🇲🇬</h1>
+        <div class="sub">Simulez la rentabilité de votre projet à Madagascar. Tenez compte de l'inflation, des risques, des taxes et des coûts réels pour une prévision réaliste sur 4 ans. **⚠️ Conseil Débutant :** N'oubliez jamais d'inclure votre *fonds de roulement* dans votre capital initial.</div>
+
+        <div class="grid grid-2">
+            <div class="card" id="settings-card">
+                <h2>⚙️ Paramètres Clés de la Simulation</h2>
+                <div class="row">
+                    <div>
+                        <label for="capital">Capital d’investissement initial (Ar)</label>
+                        <input id="capital" type="number" min="0" step="1000" placeholder="1000000" />
+                        <div class="muted">**C'est le montant total nécessaire** (Matériel + Stock initial + **Fonds de Roulement** pour 3 mois de dépenses).</div>
+                    </div>
+                    <div>
+                        <label for="activity">Domaine d'Activité</label>
+                        <select id="activity">
+                            <option value="Kiosque alimentaire">Kiosque alimentaire</option>
+                            <option value="Friperie">Friperie</option>
+                            <option value="Revente fruits/légumes">Revente fruits/légumes</option>
+                            <option value="Photocopie/Impression">Photocopie/Impression</option>
+                            <option value="Salon de coiffure">Salon de coiffure</option>
+                            <option value="Artisanat">Artisanat</option>
+                        </select>
+                        <div class="muted">Sélectionnez le secteur pour un contexte.</div>
+                    </div>
+                </div>
+
+                <hr style="border-top: 1px solid var(--border); margin: 20px 0;" />
+
+                <h3>📈 Facteurs Macro-économiques & Risques Locaux</h3>
+                <div class="row">
+                    <div>
+                        <label for="inflationRate">Taux d'Inflation Annuel (%)</label>
+                        <input id="inflationRate" type="number" min="0" step="0.1" placeholder="8" />
+                        <div class="muted">**L'inflation érode la valeur de l'Ariary.** Ce taux est crucial pour la justesse de vos **projections futures**.</div>
+                    </div>
+                    <div>
+                        <label for="riskFactor">Perte de Revenu due aux Risques (jours/an)</label>
+                        <input id="riskFactor" type="number" min="0" step="1" placeholder="7" />
+                        <div class="muted">Jours d'activité perdus (coupures **JIRAMA**, intempéries/cyclones, grèves). Un facteur **vital** pour la réalité locale.</div>
+                    </div>
+                </div>
+                
+                <h3>☀️ Saisonnalité (Fluctuations de la Demande)</h3>
+                <div class="row">
+                    <div>
+                        <label for="seasonalVariation">Variation Haute Saison (%)</label>
+                        <input id="seasonalVariation" type="number" step="1" placeholder="30" />
+                        <div class="muted">Pourcentage d'augmentation (ou de diminution) par rapport à la moyenne.</div>
+                    </div>
+                    <div>
+                        <label for="seasonalDuration">Durée Haute Saison (Mois)</label>
+                        <input id="seasonalDuration" type="number" min="0" max="12" step="1" placeholder="4" />
+                        <div class="muted">Ex: Périodes de fêtes, rentrée scolaire, récolte...</div>
+                    </div>
+                </div>
+
+                <hr style="border-top: 1px solid var(--border); margin: 20px 0;" />
+
+                <h3>🏛️ Fiscalité & Coûts Réels</h3>
+                
+                <div class="row">
+                    <div>
+                        <label for="taxRegime">Régime Fiscal</label>
+                        <select id="taxRegime">
+                            <option value="IS">IS (Impôt sur les Sociétés - 20%)</option>
+                            <option value="IR">IR (Impôt sur les Revenus - Barème progressif)</option>
+                            <option value="ISyn">ISyn (Impôt Synthétique - 5%)</option>
+                        </select>
+                        <div class="muted">**ISyn (5%)** est souvent plus simple pour les TPE. L'IR est pour les personnes physiques.</div>
+                    </div>
+                    <div>
+                        <label for="incomeTaxRate">Taux d'Impôt (%)</label>
+                        <input id="incomeTaxRate" type="number" min="0" step="0.5" placeholder="5" />
+                        <div class="muted">Le taux appliqué sur le **Profit Net**. Ajustez-le selon votre situation (par ex. 20% pour l'IS).</div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div>
+                        <label for="vatRate">Taux de TVA (%)</label>
+                        <input id="vatRate" type="number" min="0" step="1" placeholder="20" />
+                        <div class="muted">Si vous n'êtes pas assujetti à la TVA, laissez ce champ à **0**. (Taux standard : 20%).</div>
+                    </div>
+                    <div>
+                        <label for="interestRate">Taux de Crédit Annuel (%)</label>
+                        <input id="interestRate" type="number" min="0" step="0.1" placeholder="12" />
+                        <div class="muted">Coût d'opportunité de l'argent (si vous aviez placé votre capital ou fait un crédit).</div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div>
+                        <label for="laborCostRatio">Charges Patronales (% Salaire Brut)</label>
+                        <input id="laborCostRatio" type="number" min="0" step="1" placeholder="15" />
+                        <div class="muted">Charges sociales (CNAPS, OSTIE). À ajouter au salaire net dans le coût total de la main-d'œuvre.</div>
+                    </div>
+                    <div>
+                        <label for="numEmployees">Nombre d'Employés/Associés</label>
+                        <input id="numEmployees" type="number" min="0" step="1" placeholder="2" />
+                        <div class="muted">Info. **N'oubliez pas d'ajouter les salaires** (y compris le vôtre) comme un flux de type 'Salaire Brut'.</div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-primary" id="saveSettings">Sauvegarder les Paramètres</button>
+                    <button class="btn btn-secondary" id="resetSettings">Réinitialiser l'État</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="card" style="margin-bottom: 24px;">
+                    <h2>➕ Ajouter un Flux</h2>
+                    <div class="row">
+                        <div>
+                            <label for="label">Libellé</label>
+                            <input id="label" type="text" placeholder="Ex: Vente riz / Loyer / Salaire gérant" />
+                        </div>
+                        <div>
+                            <label for="amount">Montant (Ar)</label>
+                            <input id="amount" type="number" min="0" step="1000" placeholder="50000" />
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 12px;">
+                        <div>
+                            <label for="type">Type de Flux</label>
+                            <select id="type">
+                                <option value="revenue">Revenu Brut</option>
+                                <option value="expense">Dépense (Stock, Loyer, Matériel)</option>
+                                <option value="labor">Salaire Brut (déclenche les charges)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="freq">Fréquence</label>
+                            <select id="freq">
+                                <option value="week">Hebdomadaire</option>
+                                <option value="month">Mensuelle</option>
+                                <option value="year">Annuelle</option>
+                                <option value="once">Ponctuelle (à l'année 1)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-top: 12px;">
+                        <label for="note">Note</label>
+                        <input id="note" type="text" placeholder="Ex: Marché Anosy, promo, saison haute…" />
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-accent" id="addItem">Ajouter le Flux</button>
+                        <button class="btn btn-secondary" id="clearItems">Tout Supprimer</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>📋 Flux Saisis</h2>
+                    <table id="itemsTable">
+                        <thead>
+                            <tr>
+                                <th>Libellé</th>
+                                <th>Type</th>
+                                <th>Fréq.</th>
+                                <th>Montant (Ar)</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <div class="muted" style="margin-top: 10px;">Dernière sauvegarde: <span id="lastSaved">Jamais</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card kpi-grid" style="margin-top: 24px;">
+            <div class="kpi-card">
+                <h3>Total Revenus (HT)</h3>
+                <div class="kpi-val kpi-net-pos" id="revYear">0 Ar/an</div>
+                <div class="kpi-sub" id="revMonth">0 Ar/mois</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Total Dépenses</h3>
+                <div class="kpi-val kpi-net-neg" id="expYear">0 Ar/an</div>
+                <div class="kpi-sub" id="expMonth">0 Ar/mois</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Profit Net (Après Impôt)</h3>
+                <div class="kpi-val kpi-net-pos" id="netYear">0 Ar/an</div>
+                <div class="kpi-sub" id="netMonth">0 Ar/mois</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Rentabilité & Payback</h3>
+                <div class="kpi-val kpi-roi" id="roiYear">0 %/an</div>
+                <div class="pill" id="payback">Point mort: —</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+            <h2>🔮 Projections Annuelles (Année 1 à 4)</h2>
+            <table id="projectionTable" class="projection-table">
+                <thead>
+                    <tr>
+                        <th>Année</th>
+                        <th>Revenu Total (HT)</th>
+                        <th>Dépense Totale</th>
+                        <th>Profit Net (Ar)</th>
+                        <th>ROI (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+            <div class="muted" style="margin-top: 10px;">Projections basées sur le taux d'inflation saisi (effet cumulé).</div>
+        </div>
+
+        <div class="card" style="margin-top: 16px;">
+            <h2>🗂️ Gestion des Données</h2>
+            <div class="actions">
+                <button class="btn btn-secondary" id="exportData">Exporter (JSON)</button>
+                <button class="btn btn-secondary" id="importData">Importer (JSON)</button>
+                <button class="btn btn-warn" id="wipeData">Effacer Toute la Sauvegarde Locale</button>
+            </div>
+            <textarea id="jsonArea" rows="4" placeholder="Collez ici des données JSON pour importer ou cliquez sur Exporter"></textarea>
+        </div>
+    </div>
+
+    <script>
+        // Enregistrement du Service Worker pour l'installation PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // NOTE: Assurez-vous que le chemin est correct (ici à la racine)
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then((registration) => {
+                        console.log('ServiceWorker enregistré avec succès:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.error('Échec de l\'enregistrement du ServiceWorker:', error);
+                    });
+            });
+        }
+    </script>
+    <script>
+        // --- Helpers ---
+        const fmt = (n) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.max(0, Math.round(n))) + " Ar";
+        const DATE_FMT = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium', timeStyle: 'short' });
+        const toNum = (v) => isNaN(parseFloat(v)) ? 0 : parseFloat(v);
+
+        // --- Constants ---
+        const WEEKS_IN_YEAR = 52;
+        const MONTHS_IN_YEAR = 12;
+        const WEEKS_IN_MONTH = 30 / 7; // ~4.2857
+
+        // --- State in localStorage ---
+        const KEY = "ariarysim_state_v2";
+        const defaultState = {
+            capital: 1000000,
+            activity: "Kiosque alimentaire",
+            items: [], 
+            lastSaved: null,
+            inflationRate: 8,
+            riskFactor: 7,
+            seasonalVariation: 30,
+            seasonalDuration: 4,
+            taxRegime: "ISyn",
+            incomeTaxRate: 5, 
+            vatRate: 20,
+            bankFeeRate: 3,         
+            interestRate: 12,       
+            utilityCostRatio: 5,    
+            logisticsCostRatio: 7,
+            laborCostRatio: 15,
+            numEmployees: 0, 
+        };
+        let state = load();
+
+        function load() {
+            try {
+                const raw = localStorage.getItem(KEY);
+                if (!raw) return { ...defaultState };
+                const parsed = JSON.parse(raw);
+                return { ...defaultState, ...parsed, items: Array.isArray(parsed.items) ? parsed.items : [] };
+            } catch (e) {
+                console.error("Erreur de chargement des données locales:", e);
+                return { ...defaultState };
+            }
+        }
+
+        function save() {
+            state.lastSaved = new Date().toISOString();
+            localStorage.setItem(KEY, JSON.stringify(state));
+            document.getElementById("lastSaved").textContent = DATE_FMT.format(new Date(state.lastSaved));
+            render();
+        }
+
+        // --- DOM references ---
+        const capitalEl = document.getElementById("capital");
+        const activityEl = document.getElementById("activity");
+        const inflationRateEl = document.getElementById("inflationRate"); 
+        const riskFactorEl = document.getElementById("riskFactor");
+        const seasonalVariationEl = document.getElementById("seasonalVariation");
+        const seasonalDurationEl = document.getElementById("seasonalDuration");
+        const taxRegimeEl = document.getElementById("taxRegime");
+        const incomeTaxRateEl = document.getElementById("incomeTaxRate");
+        const vatRateEl = document.getElementById("vatRate");
+        const interestRateEl = document.getElementById("interestRate");
+        const laborCostRatioEl = document.getElementById("laborCostRatio");
+        const numEmployeesEl = document.getElementById("numEmployees"); 
+
+        const saveSettingsBtn = document.getElementById("saveSettings");
+        const resetSettingsBtn = document.getElementById("resetSettings");
+
+        const labelEl = document.getElementById("label");
+        const amountEl = document.getElementById("amount");
+        const typeEl = document.getElementById("type");
+        const freqEl = document.getElementById("freq");
+        const noteEl = document.getElementById("note");
+        const addItemBtn = document.getElementById("addItem");
+        const clearItemsBtn = document.getElementById("clearItems");
+
+        const itemsTableBody = document.querySelector("#itemsTable tbody");
+        const projectionTableBody = document.querySelector("#projectionTable tbody");
+
+        const revMonthEl = document.getElementById("revMonth");
+        const revYearEl = document.getElementById("revYear");
+        const expMonthEl = document.getElementById("expMonth");
+        const expYearEl = document.getElementById("expYear");
+        const netMonthEl = document.getElementById("netMonth");
+        const netYearEl = document.getElementById("netYear");
+        const roiYearEl = document.getElementById("roiYear");
+        const paybackEl = document.getElementById("payback");
+
+        const exportBtn = document.getElementById("exportData");
+        const importBtn = document.getElementById("importData");
+        const wipeBtn = document.getElementById("wipeData");
+        const jsonArea = document.getElementById("jsonArea");
+
+        // --- Init form values ---
+        function initForm() {
+            capitalEl.value = state.capital;
+            activityEl.value = state.activity;
+            inflationRateEl.value = state.inflationRate;
+            riskFactorEl.value = state.riskFactor;
+            seasonalVariationEl.value = state.seasonalVariation;
+            seasonalDurationEl.value = state.seasonalDuration;
+            taxRegimeEl.value = state.taxRegime;
+            incomeTaxRateEl.value = state.incomeTaxRate;
+            vatRateEl.value = state.vatRate;
+            interestRateEl.value = state.interestRate;
+            laborCostRatioEl.value = state.laborCostRatio;
+            numEmployeesEl.value = state.numEmployees; 
+            
+            document.getElementById("lastSaved").textContent = state.lastSaved ? DATE_FMT.format(new Date(state.lastSaved)) : "Jamais";
+        }
+
+        // --- Frequency normalization ---
+        function normalizeToWeek(item) {
+            const amt = toNum(item.amount);
+            switch (item.freq) {
+                case "week": return amt;
+                case "month": return amt / WEEKS_IN_MONTH;
+                case "year": return amt / WEEKS_IN_YEAR;
+                case "once": return amt / WEEKS_IN_YEAR; 
+                default: return 0;
+            }
+        }
+        function normalizeToMonth(item) {
+            const amt = toNum(item.amount);
+            switch (item.freq) {
+                case "week": return amt * WEEKS_IN_MONTH;
+                case "month": return amt;
+                case "year": return amt / MONTHS_IN_YEAR;
+                case "once": return amt / MONTHS_IN_YEAR;
+                default: return 0;
+            }
+        }
+        function normalizeToYear(item) {
+            const amt = toNum(item.amount);
+            const INFLATION_FACTOR = 1 + (toNum(state.inflationRate) / 100);
+            let factor = 1;
+
+            switch (item.freq) {
+                case "week": factor = WEEKS_IN_YEAR * INFLATION_FACTOR; break;
+                case "month": factor = MONTHS_IN_YEAR * INFLATION_FACTOR; break;
+                case "year": factor = 1; break;
+                case "once": factor = 1; break;
+                default: return 0;
+            }
+            return amt * factor;
+        }
+
+        // --- Calculations ---
+        function compute() {
+            const totals = {
+                week: { revenue: 0, expense: 0 },
+                month: { revenue: 0, expense: 0 },
+                year: { revenue: 0, expense: 0 }
+            };
+
+            // Constantes
+            const VAT_RATE_FACTOR = 1 + (toNum(state.vatRate) / 100);
+            const LABOR_RATIO = toNum(state.laborCostRatio) / 100;
+            const CAPITAL = toNum(state.capital);
+            const INTEREST_RATE = toNum(state.interestRate) / 100;
+            const INCOME_TAX_RATE = toNum(state.incomeTaxRate) / 100;
+            const INFLATION_RATE = toNum(state.inflationRate) / 100;
+            const VAR_PERCENT = toNum(state.seasonalVariation) / 100;
+            const DURATION_MONTHS = Math.min(12, Math.max(0, toNum(state.seasonalDuration)));
+
+            let totalLaborChargesYear = 0;
+
+            // 1. Calcul des flux de base (HT) + Charges Patronales
+            state.items.forEach(it => {
+                const w = normalizeToWeek(it);
+                const m = normalizeToMonth(it);
+                const y = normalizeToYear(it);
+                
+                if (it.type === "revenue") {
+                    totals.week.revenue += w / VAT_RATE_FACTOR;
+                    totals.month.revenue += m / VAT_RATE_FACTOR;
+                    totals.year.revenue += y / VAT_RATE_FACTOR;
+                } else if (it.type === "expense") {
+                    totals.week.expense += w;
+                    totals.month.expense += m;
+                    totals.year.expense += y;
+                } else if (it.type === "labor") {
+                    totals.week.expense += w;
+                    totals.month.expense += m;
+                    totals.year.expense += y;
+
+                    // Calcul des charges patronales (basé sur le total annuel du salaire brut)
+                    totalLaborChargesYear += y * LABOR_RATIO;
+                }
+            });
+            
+            // Ajouter les charges patronales aux totaux de dépenses annuelles
+            totals.year.expense += totalLaborChargesYear;
+
+            // Coûts basés sur le capital (annuel)
+            let capitalCostYear = CAPITAL * INTEREST_RATE; // Coût d'opportunité/intérêts
+            
+            totals.year.expense += capitalCostYear;
+
+
+            // 2. Ajustements sur le Revenu Annuel (Risque et Saisonnalité)
+            const ANNUAL_RISK_DAYS = toNum(state.riskFactor);
+            // Revenu HT de l'année 1 sans inflation (pour les calculs de jours/saisonnalité)
+            let baseRevenueY1 = totals.year.revenue / (1 + INFLATION_RATE); 
+            
+            const revenueLossDueToRisk = ANNUAL_RISK_DAYS * (baseRevenueY1 / 365);
+            let annualRevenueToAdjust = totals.year.revenue - revenueLossDueToRisk;
+
+            let seasonalAdjustment = 0;
+            if (VAR_PERCENT !== 0 && DURATION_MONTHS > 0) {
+                const avgMonthlyRevenue = baseRevenueY1 / MONTHS_IN_YEAR;
+                seasonalAdjustment = (avgMonthlyRevenue * DURATION_MONTHS) * VAR_PERCENT;
+                annualRevenueToAdjust += seasonalAdjustment; 
+            }
+            
+            // 3. Calcul du Net Annuel (Année 1)
+            const netBeforeTaxY1 = annualRevenueToAdjust - totals.year.expense;
+            let taxAmountY1 = Math.max(0, netBeforeTaxY1) * INCOME_TAX_RATE;
+            const netFinalY1 = netBeforeTaxY1 - taxAmountY1;
+            
+            const roiY1 = (netFinalY1 / CAPITAL) * 100;
+
+            const netMonthFinal = netFinalY1 / MONTHS_IN_YEAR;
+            
+            // Point mort
+            let payback = "—";
+            if (netMonthFinal > 0) {
+                payback = `~${(CAPITAL / netMonthFinal).toFixed(1)} mois`;
+            } else if (netMonthFinal < 0) {
+                payback = "Non atteignable";
+            }
+            
+            // 4. Projections futures (Années 2, 3, 4)
+            const projections = [
+                { year: 1, net: netFinalY1, roi: roiY1, revenue: annualRevenueToAdjust, expense: totals.year.expense }
+            ];
+
+            for (let n = 2; n <= 4; n++) {
+                // Facteur d'inflation cumulée
+                const inflationFactor = Math.pow(1 + INFLATION_RATE, n - 1);
+                
+                // Revenu total de l'année (base + saison + risque) ajusté par l'inflation
+                const revenueBaseInflated = baseRevenueY1 * inflationFactor;
+                const riskInflated = revenueLossDueToRisk * Math.pow(1 + INFLATION_RATE, n - 1);
+                const seasonalInflated = seasonalAdjustment * Math.pow(1 + INFLATION_RATE, n - 1);
+                
+                const newRevenue = revenueBaseInflated - riskInflated + seasonalInflated;
+
+                // Dépenses fixes et variables (hors coût capital) ajustées par l'inflation
+                const expenseBase = totals.year.expense - capitalCostYear;
+                const newExpenseBase = expenseBase * inflationFactor;
+
+                const newExpenseTotal = newExpenseBase + capitalCostYear;
+                
+                const netBeforeTaxNew = newRevenue - newExpenseTotal;
+                let taxAmountNew = Math.max(0, netBeforeTaxNew) * INCOME_TAX_RATE;
+                const netFinalNew = netBeforeTaxNew - taxAmountNew;
+                
+                const roiNew = (netFinalNew / CAPITAL) * 100;
+
+                projections.push({
+                    year: n,
+                    net: netFinalNew,
+                    roi: roiNew,
+                    revenue: newRevenue,
+                    expense: newExpenseTotal
+                });
+            }
+
+            return { 
+                totals, 
+                net: { month: netMonthFinal, year: netFinalY1 }, 
+                roiYear: roiY1, 
+                payback, 
+                projections 
+            };
+        }
+
+        // --- Render UI ---
+        
+        function renderTable() {
+            itemsTableBody.innerHTML = "";
+            if (state.items.length === 0) {
+                const tr = document.createElement("tr");
+                const td = document.createElement("td");
+                td.colSpan = 5;
+                td.innerHTML = `<span class="muted">Aucun flux saisi. Utilisez le formulaire "Ajouter un Flux" ci-dessus.</span>`;
+                tr.appendChild(td);
+                itemsTableBody.appendChild(tr);
+                return;
+            }
+
+            state.items.forEach((it) => {
+                const tr = document.createElement("tr");
+                const typeText = it.type === "revenue" ? "Revenu" : it.type === "expense" ? "Dépense" : "Salaire Brut";
+                const typeClass = it.type === "revenue" ? "rev" : "dep";
+                const freqMap = { week: "Hebdo", month: "Mensuel", year: "Annuel", once: "Ponctuel" };
+                const freqText = freqMap[it.freq] || it.freq;
+
+                tr.innerHTML = `
+                    <td>${it.label}</td>
+                    <td><span class="badge ${typeClass}">${typeText}</span></td>
+                    <td>${freqText}</td>
+                    <td>${fmt(it.amount)}</td>
+                    <td><button class="btn btn-warn" data-act="del" data-id="${it.id}">X</button></td>
+                `;
+                itemsTableBody.appendChild(tr);
+            });
+        }
+
+        function renderProjections(projections) {
+            projectionTableBody.innerHTML = "";
+            
+            projections.forEach((p) => {
+                const tr = document.createElement("tr");
+                const netColor = p.net >= 0 ? 'rev' : 'dep';
+
+                tr.innerHTML = `
+                    <td>Année ${p.year}</td>
+                    <td>${fmt(p.revenue)}</td>
+                    <td>${fmt(p.expense)}</td>
+                    <td><span class="badge ${netColor}">${fmt(p.net)}</span></td>
+                    <td>${p.roi.toFixed(1)} %</td>
+                `;
+                projectionTableBody.appendChild(tr);
+            });
+        }
+        
+        function renderKPIs() {
+            const { totals, net, roiYear, payback, projections } = compute();
+            
+            revMonthEl.textContent = fmt(totals.month.revenue) + "/mois";
+            revYearEl.textContent = fmt(totals.year.revenue) + "/an";
+
+            expMonthEl.textContent = fmt(totals.month.expense) + "/mois";
+            expYearEl.textContent = fmt(totals.year.expense) + "/an";
+            
+            netMonthEl.textContent = fmt(net.month) + "/mois";
+            netYearEl.textContent = fmt(net.year) + "/an";
+            netYearEl.classList.toggle('kpi-net-pos', net.year >= 0);
+            netYearEl.classList.toggle('kpi-net-neg', net.year < 0);
+
+            roiYearEl.textContent = `${roiYear.toFixed(1)} %/an`;
+            paybackEl.textContent = `Point mort: ${payback}`;
+
+            renderProjections(projections);
+        }
+
+        function render() {
+            renderTable();
+            renderKPIs();
+        }
+
+        // --- Event Handlers ---
+        saveSettingsBtn.addEventListener("click", () => {
+            state.capital = toNum(capitalEl.value);
+            state.activity = activityEl.value;
+            state.inflationRate = toNum(inflationRateEl.value);
+            state.riskFactor = toNum(riskFactorEl.value);
+            state.seasonalVariation = toNum(seasonalVariationEl.value); 
+            state.seasonalDuration = toNum(seasonalDurationEl.value);
+            state.taxRegime = taxRegimeEl.value;
+            state.incomeTaxRate = toNum(incomeTaxRateEl.value);
+            state.vatRate = toNum(vatRateEl.value);
+            state.interestRate = toNum(interestRateEl.value);
+            state.laborCostRatio = toNum(laborCostRatioEl.value);
+            state.numEmployees = toNum(numEmployeesEl.value); 
+
+            save();
+        });
+
+        resetSettingsBtn.addEventListener("click", () => {
+            if (confirm("Réinitialiser tous les paramètres aux valeurs par défaut ?")) {
+                state = { ...defaultState, items: [] }; // Reset all, including items
+                save();
+                initForm();
+            }
+        });
+
+        // Mise à jour du taux quand le régime change + info pour les débutants
+        taxRegimeEl.addEventListener("change", () => {
+            const regime = taxRegimeEl.value;
+            let newRate = toNum(incomeTaxRateEl.value);
+
+            if (regime === "IS") {
+                newRate = 20; 
+                alert("Régime IS (Impôt sur les Sociétés) sélectionné. Taux suggéré: 20%.");
+            } else if (regime === "ISyn") {
+                newRate = 5; 
+                alert("Régime ISyn (Impôt Synthétique) sélectionné. Taux suggéré: 5%. Ce régime est souvent le plus adapté aux petites activités à Madagascar.");
+            } else if (regime === "IR") {
+                alert("⚠️ Régime IR (Impôt sur les Revenus) sélectionné. Le taux d'IR est progressif (par paliers) et non un taux unique. Le taux que vous saisissez ici doit être votre taux effectif moyen estimé. Soyez prudent dans votre estimation.");
+            }
+
+            incomeTaxRateEl.value = newRate;
+            state.taxRegime = regime;
+            state.incomeTaxRate = newRate;
+            save(); 
+        });
+
+
+        // Ajout, Suppression, Import/Export (logique inchangée)
+        addItemBtn.addEventListener("click", () => {
+            const item = {
+                id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2),
+                label: (labelEl.value || "").trim(),
+                amount: toNum(amountEl.value),
+                type: typeEl.value,
+                freq: freqEl.value,
+                note: (noteEl.value || "").trim()
+            };
+            if (!item.label || item.amount <= 0) {
+                alert("Veuillez saisir un libellé et un montant valide.");
+                return;
+            }
+            if (!["revenue", "expense", "labor"].includes(item.type)) {
+                alert("Type d'élément invalide.");
+                return;
+            }
+
+            state.items.push(item);
+            save();
+            labelEl.value = "";
+            amountEl.value = "";
+            noteEl.value = "";
+        });
+
+        clearItemsBtn.addEventListener("click", () => {
+            if (confirm("Supprimer TOUS les flux saisis ?")) {
+                state.items = [];
+                save();
+            }
+        });
+
+        itemsTableBody.addEventListener("click", (e) => {
+            const btn = e.target.closest("button");
+            if (!btn) return;
+            const id = btn.getAttribute("data-id");
+            const act = btn.getAttribute("data-act");
+            const idx = state.items.findIndex(x => x.id === id);
+            if (idx === -1) return;
+
+            if (act === "del") {
+                if (confirm("Supprimer ce flux ?")) {
+                    state.items.splice(idx, 1);
+                    save();
+                }
+            }
+        });
+
+        exportBtn.addEventListener("click", () => { jsonArea.value = JSON.stringify(state, null, 2); });
+        importBtn.addEventListener("click", () => {
+            try {
+                const parsed = JSON.parse(jsonArea.value);
+                if (!parsed || typeof parsed !== "object") throw new Error("Format invalide");
+                state = { ...state, ...parsed }; 
+                save();
+                initForm();
+            } catch (e) { alert("Impossible d’importer: vérifiez le JSON."); }
+        });
+        wipeBtn.addEventListener("click", () => {
+            if (confirm("Effacer toute la sauvegarde locale ? Cette action est irréversible !")) {
+                localStorage.removeItem(KEY);
+                state = { ...defaultState };
+                initForm();
+                render();
+            }
+        });
+
+
+        // --- Start ---
+        initForm();
+        render();
+    </script>
+</body>
+</html>
