@@ -8,15 +8,15 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#238636">
     <style>
-        /* Variables et Style de Base (Mode Sombre Moderne) */
+        / Variables et Style de Base (Mode Sombre Moderne) /
         :root {
             --bg: #0d1117;
             --card: #161b22;
             --muted: #8b949e;
             --text: #c9d1d9;
-            --accent: #238636; /* Vert pour succès/ROI */
-            --info: #58a6ff; /* Bleu pour paramètres */
-            --warn: #f85149; /* Rouge pour alerte/suppression */
+            --accent: #238636; / Vert pour succès/ROI /
+            --info: #58a6ff; / Bleu pour paramètres /
+            --warn: #f85149; / Rouge pour alerte/suppression /
             --border: #30363d;
             --radius: 8px;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -33,12 +33,12 @@
         h1 { margin: 0 0 4px; font-size: 2.2rem; color: var(--info); }
         .sub { color: var(--muted); margin-bottom: 24px; font-size: 1rem; }
         
-        /* Layout Grid */
+        / Layout Grid /
         .grid { display: grid; gap: 24px; grid-template-columns: 1fr; }
         @media (min-width: 992px) { .grid-2 { grid-template-columns: 2fr 1fr; } }
         @media (min-width: 1200px) { .grid-3 { grid-template-columns: 1.5fr 1fr 1fr; } }
 
-        /* Cartes (Containers) */
+        / Cartes (Containers) /
         .card {
             background-color: var(--card);
             border: 1px solid var(--border);
@@ -47,7 +47,7 @@
             box-shadow: var(--shadow);
         }
         
-        /* Formulaires et Entrées */
+        / Formulaires et Entrées /
         label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 0.95rem; }
         input, select {
             background-color: #0d1117;
@@ -64,7 +64,7 @@
         .row > div { margin-bottom: 12px; }
         .muted { color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
         
-        /* Boutons */
+        / Boutons /
         .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
         .btn {
             cursor: pointer;
@@ -80,7 +80,7 @@
         .btn-warn { background-color: var(--warn); color: var(--bg); border-color: var(--warn); }
         .btn-secondary { background-color: transparent; color: var(--text); border-color: var(--border); }
 
-        /* Indicateurs Clés (KPIs) */
+        / Indicateurs Clés (KPIs) /
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 24px; }
         .kpi-card { padding: 16px; border-left: 4px solid var(--border); }
         .kpi-card h3 { margin: 0 0 4px; font-size: 1rem; color: var(--muted); }
@@ -94,7 +94,7 @@
             background-color: var(--border); color: var(--text);
         }
         
-        /* Tableau */
+        / Tableau /
         table { width: 100%; border-collapse: collapse; margin-top: 12px; }
         th, td { border-bottom: 1px solid var(--border); padding: 12px 8px; text-align: left; font-size: 0.9rem; }
         th { color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; }
@@ -102,7 +102,7 @@
         .rev { background-color: #14321c; color: #40c476; }
         .dep { background-color: #4e1a1e; color: #ff9191; }
         
-        /* Projections */
+        / Projections /
         .projection-table tbody tr:nth-child(1) { font-weight: 700; background-color: #1e2531; }
         .projection-table tbody tr:nth-child(odd) { background-color: #1a202a; }
     </style>
@@ -110,7 +110,7 @@
 <body>
     <div class="container">
         <h1>AriarySim 🇲🇬</h1>
-        <div class="sub">Simulez la rentabilité de votre projet à Madagascar. Tenez compte de l'inflation, des risques, des taxes et des coûts réels pour une prévision réaliste sur 4 ans. **⚠️ Conseil Débutant :** N'oubliez jamais d'inclure votre *fonds de roulement* dans votre capital initial.</div>
+        <div class="sub">Simulez la rentabilité de votre projet à Madagascar. Tenez compte de l'inflation, des risques, des taxes et des coûts réels pour une prévision réaliste sur 4 ans. ⚠️ Conseil Débutant : N'oubliez jamais d'inclure votre fonds de roulement dans votre capital initial.</div>
 
         <div class="grid grid-2">
             <div class="card" id="settings-card">
@@ -119,7 +119,7 @@
                     <div>
                         <label for="capital">Capital d’investissement initial (Ar)</label>
                         <input id="capital" type="number" min="0" step="1000" placeholder="1000000" />
-                        <div class="muted">**C'est le montant total nécessaire** (Matériel + Stock initial + **Fonds de Roulement** pour 3 mois de dépenses).</div>
+                        <div class="muted">C'est le montant total nécessaire (Matériel + Stock initial + Fonds de Roulement pour 3 mois de dépenses).</div>
                     </div>
                     <div>
                         <label for="activity">Domaine d'Activité</label>
@@ -142,12 +142,12 @@
                     <div>
                         <label for="inflationRate">Taux d'Inflation Annuel (%)</label>
                         <input id="inflationRate" type="number" min="0" step="0.1" placeholder="8" />
-                        <div class="muted">**L'inflation érode la valeur de l'Ariary.** Ce taux est crucial pour la justesse de vos **projections futures**.</div>
+                        <div class="muted">L'inflation érode la valeur de l'Ariary. Ce taux est crucial pour la justesse de vos projections futures.</div>
                     </div>
                     <div>
                         <label for="riskFactor">Perte de Revenu due aux Risques (jours/an)</label>
                         <input id="riskFactor" type="number" min="0" step="1" placeholder="7" />
-                        <div class="muted">Jours d'activité perdus (coupures **JIRAMA**, intempéries/cyclones, grèves). Un facteur **vital** pour la réalité locale.</div>
+                        <div class="muted">Jours d'activité perdus (coupures JIRAMA, intempéries/cyclones, grèves). Un facteur vital pour la réalité locale.</div>
                     </div>
                 </div>
                 
@@ -177,12 +177,12 @@
                             <option value="IR">IR (Impôt sur les Revenus - Barème progressif)</option>
                             <option value="ISyn">ISyn (Impôt Synthétique - 5%)</option>
                         </select>
-                        <div class="muted">**ISyn (5%)** est souvent plus simple pour les TPE. L'IR est pour les personnes physiques.</div>
+                        <div class="muted">ISyn (5%) est souvent plus simple pour les TPE. L'IR est pour les personnes physiques.</div>
                     </div>
                     <div>
                         <label for="incomeTaxRate">Taux d'Impôt (%)</label>
                         <input id="incomeTaxRate" type="number" min="0" step="0.5" placeholder="5" />
-                        <div class="muted">Le taux appliqué sur le **Profit Net**. Ajustez-le selon votre situation (par ex. 20% pour l'IS).</div>
+                        <div class="muted">Le taux appliqué sur le Profit Net. Ajustez-le selon votre situation (par ex. 20% pour l'IS).</div>
                     </div>
                 </div>
 
@@ -190,7 +190,7 @@
                     <div>
                         <label for="vatRate">Taux de TVA (%)</label>
                         <input id="vatRate" type="number" min="0" step="1" placeholder="20" />
-                        <div class="muted">Si vous n'êtes pas assujetti à la TVA, laissez ce champ à **0**. (Taux standard : 20%).</div>
+                        <div class="muted">Si vous n'êtes pas assujetti à la TVA, laissez ce champ à 0. (Taux standard : 20%).</div>
                     </div>
                     <div>
                         <label for="interestRate">Taux de Crédit Annuel (%)</label>
@@ -208,7 +208,7 @@
                     <div>
                         <label for="numEmployees">Nombre d'Employés/Associés</label>
                         <input id="numEmployees" type="number" min="0" step="1" placeholder="2" />
-                        <div class="muted">Info. **N'oubliez pas d'ajouter les salaires** (y compris le vôtre) comme un flux de type 'Salaire Brut'.</div>
+                        <div class="muted">Info. N'oubliez pas d'ajouter les salaires (y compris le vôtre) comme un flux de type 'Salaire Brut'.</div>
                     </div>
                 </div>
 
@@ -473,7 +473,7 @@
         function normalizeToMonth(item) {
             const amt = toNum(item.amount);
             switch (item.freq) {
-                case "week": return amt * WEEKS_IN_MONTH;
+                case "week": return amt  WEEKS_IN_MONTH;
                 case "month": return amt;
                 case "year": return amt / MONTHS_IN_YEAR;
                 case "once": return amt / MONTHS_IN_YEAR;
@@ -486,13 +486,13 @@
             let factor = 1;
 
             switch (item.freq) {
-                case "week": factor = WEEKS_IN_YEAR * INFLATION_FACTOR; break;
-                case "month": factor = MONTHS_IN_YEAR * INFLATION_FACTOR; break;
+                case "week": factor = WEEKS_IN_YEAR  INFLATION_FACTOR; break;
+                case "month": factor = MONTHS_IN_YEAR  INFLATION_FACTOR; break;
                 case "year": factor = 1; break;
                 case "once": factor = 1; break;
                 default: return 0;
             }
-            return amt * factor;
+            return amt  factor;
         }
 
         // --- Calculations ---
@@ -535,7 +535,7 @@
                     totals.year.expense += y;
 
                     // Calcul des charges patronales (basé sur le total annuel du salaire brut)
-                    totalLaborChargesYear += y * LABOR_RATIO;
+                    totalLaborChargesYear += y  LABOR_RATIO;
                 }
             });
             
@@ -543,7 +543,7 @@
             totals.year.expense += totalLaborChargesYear;
 
             // Coûts basés sur le capital (annuel)
-            let capitalCostYear = CAPITAL * INTEREST_RATE; // Coût d'opportunité/intérêts
+            let capitalCostYear = CAPITAL  INTEREST_RATE; // Coût d'opportunité/intérêts
             
             totals.year.expense += capitalCostYear;
 
@@ -553,22 +553,22 @@
             // Revenu HT de l'année 1 sans inflation (pour les calculs de jours/saisonnalité)
             let baseRevenueY1 = totals.year.revenue / (1 + INFLATION_RATE); 
             
-            const revenueLossDueToRisk = ANNUAL_RISK_DAYS * (baseRevenueY1 / 365);
+            const revenueLossDueToRisk = ANNUAL_RISK_DAYS  (baseRevenueY1 / 365);
             let annualRevenueToAdjust = totals.year.revenue - revenueLossDueToRisk;
 
             let seasonalAdjustment = 0;
             if (VAR_PERCENT !== 0 && DURATION_MONTHS > 0) {
                 const avgMonthlyRevenue = baseRevenueY1 / MONTHS_IN_YEAR;
-                seasonalAdjustment = (avgMonthlyRevenue * DURATION_MONTHS) * VAR_PERCENT;
+                seasonalAdjustment = (avgMonthlyRevenue  DURATION_MONTHS)  VAR_PERCENT;
                 annualRevenueToAdjust += seasonalAdjustment; 
             }
             
             // 3. Calcul du Net Annuel (Année 1)
             const netBeforeTaxY1 = annualRevenueToAdjust - totals.year.expense;
-            let taxAmountY1 = Math.max(0, netBeforeTaxY1) * INCOME_TAX_RATE;
+            let taxAmountY1 = Math.max(0, netBeforeTaxY1)  INCOME_TAX_RATE;
             const netFinalY1 = netBeforeTaxY1 - taxAmountY1;
             
-            const roiY1 = (netFinalY1 / CAPITAL) * 100;
+            const roiY1 = (netFinalY1 / CAPITAL)  100;
 
             const netMonthFinal = netFinalY1 / MONTHS_IN_YEAR;
             
@@ -590,23 +590,23 @@
                 const inflationFactor = Math.pow(1 + INFLATION_RATE, n - 1);
                 
                 // Revenu total de l'année (base + saison + risque) ajusté par l'inflation
-                const revenueBaseInflated = baseRevenueY1 * inflationFactor;
-                const riskInflated = revenueLossDueToRisk * Math.pow(1 + INFLATION_RATE, n - 1);
-                const seasonalInflated = seasonalAdjustment * Math.pow(1 + INFLATION_RATE, n - 1);
+                const revenueBaseInflated = baseRevenueY1  inflationFactor;
+                const riskInflated = revenueLossDueToRisk  Math.pow(1 + INFLATION_RATE, n - 1);
+                const seasonalInflated = seasonalAdjustment  Math.pow(1 + INFLATION_RATE, n - 1);
                 
                 const newRevenue = revenueBaseInflated - riskInflated + seasonalInflated;
 
                 // Dépenses fixes et variables (hors coût capital) ajustées par l'inflation
                 const expenseBase = totals.year.expense - capitalCostYear;
-                const newExpenseBase = expenseBase * inflationFactor;
+                const newExpenseBase = expenseBase  inflationFactor;
 
                 const newExpenseTotal = newExpenseBase + capitalCostYear;
                 
                 const netBeforeTaxNew = newRevenue - newExpenseTotal;
-                let taxAmountNew = Math.max(0, netBeforeTaxNew) * INCOME_TAX_RATE;
+                let taxAmountNew = Math.max(0, netBeforeTaxNew)  INCOME_TAX_RATE;
                 const netFinalNew = netBeforeTaxNew - taxAmountNew;
                 
-                const roiNew = (netFinalNew / CAPITAL) * 100;
+                const roiNew = (netFinalNew / CAPITAL)  100;
 
                 projections.push({
                     year: n,
@@ -823,4 +823,5 @@
         render();
     </script>
 </body>
+
 </html>
